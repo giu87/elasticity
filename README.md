@@ -82,38 +82,55 @@ jobflow.hadoop_version                    = '0.20.205'
 jobflow.keep_job_flow_alive_when_no_steps = true
 jobflow.log_uri                           = nil
 jobflow.name                              = 'Elasticity Job Flow'
+jobflow.instance_count                    = 2
+jobflow.master_instance_type              = 'm1.small'
+jobflow.slave_instance_type               = 'm1.small'
 ```
 
 ## 3 - Configuring Instance Groups (optional)
 
-*I'm not really going to go into the different instance group types, what they mean and how to use them - that's more core Hadoop and EMR knowledge that's beyond the scope of Elasticity.  Instead, I'll let you know how to configure them.*
+Technically this is optional since Elasticity creates MASTER and CORE instance groups for you (one m1.small instance in each).  If you'd like your jobs to finish in an appreciable amount of time, you'll want to at least add a few instances to the CORE group :)
 
-Technically this is optional since Elasticity creates ```MASTER``` and ```CORE``` instance groups for you (one m1.small instance in each).  If you'd like your jobs to finish in an appreciable amount of time, you'll want to at least add a few instances to the ```CORE``` group :)
+### The Easy Way™
 
-Elasticity supports all EMR instance group types. The ```MASTER```, ```CORE``` and ```TASK``` instance groups can be configured via ```JobFlow#set_master_instance_group```, ```JobFlow#set_core_instance_group``` and ```JobFlow#set_task_instance_group``` respectively.
+If all you'd like to do is change the type or number of instances, ```JobFlow``` provides a few shortcuts to do just that.
 
-### On-demand Instance Groups
+```
+jobflow.instance_count       = 10
+jobflow.master_instance_type = 'm1.small'
+jobflow.slave_instance_type  = 'c1.medium'
+```
 
-These instances will be available for the life of your EMR job, versus spot instances which may be transient depending on your bid price (see below).
+This says "I want 10 instances from EMR: one m1.small MASTER instance and nine c1.medium CORE instances."
+
+### The Still-Easy Way™
+
+Elasticity supports all EMR instance group types and all configuration options. The MASTER, CORE and TASK instance groups can be configured via ```JobFlow#set_master_instance_group```, ```JobFlow#set_core_instance_group``` and ```JobFlow#set_task_instance_group``` respectively.
+
+#### On-Demand Instance Groups
+
+These instances will be available for the life of your EMR job, versus Spot instances which are transient depending on your bid price (see below).
 
 ```
 ig = Elasticity::InstanceGroup.new
-ig.type = 'c1.medium'               # See the EMR docs for a list of supported types
+ig.count = 10                       # Provision 10 instances
+ig.type  = 'c1.medium'              # See the EMR docs for a list of supported types
 ig.set_on_demand_instances          # This is the default setting
-ig.count = 10
+
 
 jobflow.set_core_instance_group(ig)
 ```
 
-### Spot Instance Groups
+#### Spot Instance Groups
 
 *When Amazon EC2 has unused capacity, it offers EC2 instances at a reduced cost, called the Spot Price. This price fluctuates based on availability and demand. You can purchase Spot Instances by placing a request that includes the highest bid price you are willing to pay for those instances. When the Spot Price is below your bid price, your Spot Instances are launched and you are billed the Spot Price. If the Spot Price rises above your bid price, Amazon EC2 terminates your Spot Instances.* - [EMR Developer Guide](http://docs.amazonwebservices.com/ElasticMapReduce/latest/DeveloperGuide/UsingEMR_SpotInstances.html)
 
 ```
 ig = Elasticity::InstanceGroup.new
-ig.type = 'c1.medium'               # See the EMR docs for a list of supported types
+ig.count = 10                       # Provision 10 instances
+ig.type  = 'c1.medium'              # See the EMR docs for a list of supported types
 ig.set_spot_instances(0.25)         # Makes this a SPOT group with a $0.25 bid price
-ig.count = 10
+
 
 jobflow.set_core_instance_group(ig)
 ```
