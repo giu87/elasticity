@@ -13,20 +13,20 @@ describe Elasticity::StreamingStep do
   its(:mapper) { should == 'MAPPER' }
   its(:reducer) { should == 'REDUCER' }
 
-  #describe '#to_aws_step' do
-  #
-  #  it 'should convert to aws step format' do
-  #    subject.to_aws_step(Elasticity::JobFlow.new('access', 'secret')).should == {
-  #      :action_on_failure => 'TERMINATE_JOB_FLOW',
-  #      :hadoop_jar_step => {
-  #        :jar => 'jar',
-  #        :args => ['arg1', 'arg2',],
-  #      },
-  #      :name => 'Elasticity Custom Jar Step'
-  #    }
-  #  end
-  #
-  #end
+  describe '#to_aws_step' do
+
+    it 'should convert to aws step format' do
+      subject.to_aws_step(Elasticity::JobFlow.new('_', '_')).should == {
+        :name => 'Elasticity Streaming Step',
+        :action_on_failure => 'TERMINATE_JOB_FLOW',
+        :hadoop_jar_step => {
+          :jar => '/home/hadoop/contrib/streaming/hadoop-streaming.jar',
+          :args => %w(-input INPUT_BUCKET -output OUTPUT_BUCKET -mapper MAPPER -reducer REDUCER),
+        },
+      }
+    end
+
+  end
 
   describe '.requires_installation?' do
     it 'should not require installation' do

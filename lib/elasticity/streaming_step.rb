@@ -20,6 +20,14 @@ module Elasticity
       @reducer = reducer
     end
 
+    def to_aws_step(job_flow)
+      step = Elasticity::CustomJarStep.new('/home/hadoop/contrib/streaming/hadoop-streaming.jar')
+      step.name = @name
+      step.action_on_failure = @action_on_failure
+      step.arguments = ['-input', @input_bucket, '-output', @output_bucket, '-mapper', @mapper, '-reducer', @reducer]
+      step.to_aws_step(job_flow)
+    end
+
   end
 
 end
