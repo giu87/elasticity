@@ -5,6 +5,7 @@ module Elasticity
     include JobFlowStep
 
     attr_accessor :name
+    attr_accessor :action_on_failure
     attr_accessor :input_bucket
     attr_accessor :output_bucket
     attr_accessor :mapper
@@ -12,6 +13,7 @@ module Elasticity
 
     def initialize(input_bucket, output_bucket, mapper, reducer)
       @name = 'Elasticity Streaming Step'
+      @action_on_failure = 'TERMINATE_JOB_FLOW'
       @input_bucket = input_bucket
       @output_bucket = output_bucket
       @mapper = mapper
